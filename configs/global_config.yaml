@@ -1,0 +1,12 @@
+version: v1
+timezone: America/Chicago
+primary_identity: lmaai@theleverageway.com
+
+paths:
+  sql_store: memory/sql_store/ledger.db
+  vector_store: memory/vector_store/index.json
+  custody_ledger: memory/sql_store/ledger.db
+
+mcp:
+  host: 0.0.0.0
+  port: 8000
