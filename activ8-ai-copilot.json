@@ -1,0 +1,31 @@
+{
+  "metadata": {
+    "version": "2025.01.0",
+    "policy_owner": "Activ8 AI Copilot",
+    "description": "Execution policy for Activ8 AI charter agents",
+    "last_reviewed": "2025-01-05T00:00:00Z"
+  },
+  "controls": {
+    "governor": "activ8",
+    "required_env": [
+      "PAT_ACTIV8_AI"
+    ],
+    "pip_cache": true,
+    "npm_cache": true,
+    "max_runtime_minutes": 15
+  },
+  "guardrails": {
+    "blocked_commands": [
+      "npm run build",
+      "git push --force"
+    ],
+    "allowed_prod_deploy": false
+  },
+  "observability": {
+    "logs": [
+      "custodian_log_binder.py",
+      "genesis_trace.py"
+    ],
+    "evidence_target": "charter_artifacts/activ8_evidence.json"
+  }
+}

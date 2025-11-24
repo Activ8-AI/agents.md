@@ -1,0 +1,30 @@
+name: Activ8 Governor Sweep
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 * * * *"
+
+jobs:
+  sweep:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4.1.0
+      - uses: actions/setup-python@v4.7.0
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: requirements-charter.txt
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && pip install -r requirements-charter.txt
+      - name: Run Activ8 Governor
+        env:
+          PAT_ACTIV8_AI: ${{ secrets.PAT_ACTIV8_AI }}
+        run: python activ8_governor.py --print-report
+      - name: Upload evidence
+        if: success() || failure()
+        uses: actions/upload-artifact@v4.3.1
+        with:
+          name: activ8-evidence
+          path: charter_artifacts/activ8_evidence.json
+          if-no-files-found: warn

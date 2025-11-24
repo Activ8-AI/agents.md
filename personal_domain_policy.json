@@ -1,0 +1,52 @@
+{
+  "metadata": {
+    "version": "2025.01.0",
+    "policy_owner": "Personal Copilot Safety",
+    "doctrine": [
+      "Sovereign personal data boundaries",
+      "Deterministic tooling via cache priming",
+      "Append-only journaling for actions"
+    ],
+    "contact": "personal-safety@meta-mega.example",
+    "data_classification": "personal"
+  },
+  "controls": {
+    "allowed_repositories": [
+      "github.com/personal-projects/*",
+      "github.com/meta-mega-studio/*"
+    ],
+    "network": {
+      "egress": [
+        "api.gitservice.dev"
+      ]
+    },
+    "runtime": {
+      "python": "3.11",
+      "node": "20.x",
+      "cache": "enabled"
+    }
+  },
+  "guardrails": {
+    "forbidden_operations": [
+      "sharing personal tokens",
+      "modifying MFA settings",
+      "rotating ssh keys without approval"
+    ],
+    "rate_limits": {
+      "api_calls_per_minute": 60,
+      "max_parallel_jobs": 1
+    }
+  },
+  "audit": {
+    "log_targets": [
+      "custodian_log_binder.py",
+      "genesis_trace.py"
+    ],
+    "artifact_bucket": "charter_artifacts/personal",
+    "required_fields": [
+      "governor",
+      "status",
+      "sha256"
+    ]
+  }
+}

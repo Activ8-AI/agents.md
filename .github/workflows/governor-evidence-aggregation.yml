@@ -1,0 +1,30 @@
+name: Governor Evidence Aggregation
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * *"
+
+jobs:
+  aggregate:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4.1.0
+      - uses: actions/setup-python@v4.7.0
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: requirements-charter.txt
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && pip install -r requirements-charter.txt
+      - name: Aggregate evidence
+        run: python governor_evidence_aggregator.py
+      - name: Upload aggregate
+        if: success() || failure()
+        uses: actions/upload-artifact@v4.3.1
+        with:
+          name: governor-evidence
+          path: |
+            charter_artifacts/evidence_aggregate.json
+            charter_artifacts/evidence_dashboard.md
+          if-no-files-found: warn

@@ -1,0 +1,30 @@
+name: LMA Governor Sweep
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "15 * * * *"
+
+jobs:
+  sweep:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4.1.0
+      - uses: actions/setup-python@v4.7.0
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: requirements-charter.txt
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && pip install -r requirements-charter.txt
+      - name: Run LMA Governor
+        env:
+          PAT_LMA: ${{ secrets.PAT_LMA }}
+        run: python lma_governor.py --print-report
+      - name: Upload evidence
+        if: success() || failure()
+        uses: actions/upload-artifact@v4.3.1
+        with:
+          name: lma-evidence
+          path: charter_artifacts/lma_evidence.json
+          if-no-files-found: warn

@@ -1,0 +1,31 @@
+{
+  "metadata": {
+    "version": "2025.01.0",
+    "policy_owner": "LMAOS Copilot",
+    "description": "Policy for LMAOS sweeps",
+    "last_reviewed": "2025-01-05T00:00:00Z"
+  },
+  "controls": {
+    "governor": "lma",
+    "required_env": [
+      "PAT_LMA"
+    ],
+    "pip_cache": true,
+    "npm_cache": false,
+    "max_runtime_minutes": 20
+  },
+  "guardrails": {
+    "blocked_commands": [
+      "rm -rf /",
+      "disable-watchdog"
+    ],
+    "allowed_prod_deploy": false
+  },
+  "observability": {
+    "logs": [
+      "custodian_log_binder.py",
+      "genesis_trace.py"
+    ],
+    "evidence_target": "charter_artifacts/lma_evidence.json"
+  }
+}

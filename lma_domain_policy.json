@@ -1,0 +1,52 @@
+{
+  "metadata": {
+    "version": "2025.01.0",
+    "policy_owner": "LMAOS Command",
+    "doctrine": [
+      "Zero drift via version-locked workflows",
+      "Evidence coherence with aggregated dashboards",
+      "Resilience through watchdog escalation"
+    ],
+    "contact": "lmaos-guard@meta-mega.example",
+    "data_classification": "confidential"
+  },
+  "controls": {
+    "allowed_repositories": [
+      "github.com/lmaos-eng/*"
+    ],
+    "network": {
+      "egress": [
+        "ops.lmaos.dev",
+        "telemetry.lmaos.dev"
+      ]
+    },
+    "runtime": {
+      "python": "3.11",
+      "node": "20.x",
+      "cache": "enabled"
+    }
+  },
+  "guardrails": {
+    "forbidden_operations": [
+      "manual changes to workflow runners",
+      "disabling watchdog alerts",
+      "mutating cached artifacts"
+    ],
+    "rate_limits": {
+      "api_calls_per_minute": 90,
+      "max_parallel_jobs": 2
+    }
+  },
+  "audit": {
+    "log_targets": [
+      "custodian_log_binder.py",
+      "genesis_trace.py"
+    ],
+    "artifact_bucket": "charter_artifacts/lma",
+    "required_fields": [
+      "governor",
+      "status",
+      "sha256"
+    ]
+  }
+}

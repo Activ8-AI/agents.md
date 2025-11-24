@@ -1,0 +1,2 @@
+# requirements for Meta Mega Codex utilities
+# Currently empty because the stack relies on the Python standard library.

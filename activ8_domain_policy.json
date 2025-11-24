@@ -1,0 +1,52 @@
+{
+  "metadata": {
+    "version": "2025.01.0",
+    "policy_owner": "Activ8 AI Governance",
+    "doctrine": [
+      "Sovereign boundaries enforced at runtime",
+      "Determinism via pinned versions and caching",
+      "Audit immutability with append-only logs"
+    ],
+    "contact": "activ8-governance@meta-mega.example",
+    "data_classification": "restricted"
+  },
+  "controls": {
+    "allowed_repositories": [
+      "github.com/activ8-ai/*"
+    ],
+    "network": {
+      "egress": [
+        "api.activ8.ai",
+        "metrics.activ8.ai"
+      ]
+    },
+    "runtime": {
+      "python": "3.11",
+      "node": "20.x",
+      "cache": "enabled"
+    }
+  },
+  "guardrails": {
+    "forbidden_operations": [
+      "git reset --hard",
+      "force push on protected branches",
+      "plain-text secret logging"
+    ],
+    "rate_limits": {
+      "api_calls_per_minute": 120,
+      "max_parallel_jobs": 3
+    }
+  },
+  "audit": {
+    "log_targets": [
+      "custodian_log_binder.py",
+      "genesis_trace.py"
+    ],
+    "artifact_bucket": "charter_artifacts/activ8",
+    "required_fields": [
+      "governor",
+      "status",
+      "sha256"
+    ]
+  }
+}

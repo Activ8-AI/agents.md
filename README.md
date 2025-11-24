@@ -49,3 +49,16 @@ that explains the project’s goals in a simple way, and featuring some examples
    npm run dev
    ```
 3. Open your browser and go to http://localhost:3000
+
+## Meta Mega Codex — Charter Standard Execution
+
+The repository now embeds the multi-layer Meta Mega Codex described in the charter. The stack is organized as follows:
+
+- **Policies (Layer 2):** Domain-level guardrails live in `activ8_domain_policy.json`, `lma_domain_policy.json`, and `personal_domain_policy.json`, while copilot execution envelopes live in `activ8-ai-copilot.json`, `lma-copilot.json`, and `personal-copilot.json`. Every policy is version-locked (`2025.01.0`) to preserve zero drift.
+- **Governors (Layer 3):** `activ8_governor.py`, `lma_governor.py`, and `personal_governor.py` share the base logic in `charter/governor_base.py` and emit append-only evidence to `charter_artifacts/*_evidence.json`.
+- **Resilience + Logging (Layers 4-5):** `resilient_governor_runner.py`, `watchdog.py`, and `governor_evidence_aggregator.py` coordinate retries, stale detection, and dashboard aggregation. Append-only logs are handled via `custodian_log_binder.py` and `genesis_trace.py`.
+- **Router (Layer 6):** `mcp_governor_router.py` exposes a lightweight router so that a single invocation can target `activ8`, `lma`, `personal`, or all governors.
+- **Workflows (Layer 7):** Six GitHub Actions pipelines live in `.github/workflows/` with pinned `ubuntu-22.04`, `actions/checkout@v4.1.0`, and `actions/setup-python@v4.7.0`, plus pip caching for deterministic runs (see the individual `*-governor-sweep`, watchdog, aggregation, and failover YAML files).
+- **Operations (Layer 8):** Runbooks map directly onto Python entry points, e.g. `PAT_ACTIV8_AI=<token> python activ8_governor.py`, `PAT_LMA=<token> python lma_governor.py`, `PAT_PERSONAL=<token> python personal_governor.py`, or the combined failover command `PAT_ACTIV8_AI=<token> PAT_LMA=<token> PAT_PERSONAL=<token> python resilient_governor_runner.py`.
+
+To trigger the full suite locally, export the required tokens and run `python mcp_governor_router.py --target all`. The invocation phrases from the charter (“Charter On — Execute Meta Mega Codex.” / “Run Governors — Activ8 AI, LMAOS, PERSONAL — Charter Standard Execution.”) now align with runnable entry points, persistent evidence, and aggregated dashboards inside `charter_artifacts/`.

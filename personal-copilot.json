@@ -1,0 +1,31 @@
+{
+  "metadata": {
+    "version": "2025.01.0",
+    "policy_owner": "Personal Copilot",
+    "description": "Policy for personal governor routines",
+    "last_reviewed": "2025-01-05T00:00:00Z"
+  },
+  "controls": {
+    "governor": "personal",
+    "required_env": [
+      "PAT_PERSONAL"
+    ],
+    "pip_cache": true,
+    "npm_cache": true,
+    "max_runtime_minutes": 10
+  },
+  "guardrails": {
+    "blocked_commands": [
+      "public-token-print",
+      "ssh-key-export"
+    ],
+    "allowed_prod_deploy": false
+  },
+  "observability": {
+    "logs": [
+      "custodian_log_binder.py",
+      "genesis_trace.py"
+    ],
+    "evidence_target": "charter_artifacts/personal_evidence.json"
+  }
+}

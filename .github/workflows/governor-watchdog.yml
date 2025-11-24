@@ -1,0 +1,21 @@
+name: Governor Watchdog
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "45 * * * *"
+
+jobs:
+  watchdog:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4.1.0
+      - uses: actions/setup-python@v4.7.0
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: requirements-charter.txt
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && pip install -r requirements-charter.txt
+      - name: Run watchdog
+        run: python watchdog.py --threshold-minutes 90
