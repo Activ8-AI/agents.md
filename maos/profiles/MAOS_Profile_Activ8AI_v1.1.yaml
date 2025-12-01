@@ -1,0 +1,111 @@
+id: activ8_ai
+version: 1.1
+name: "Activ8 AI – Core Operating Profile"
+status: Draft Canon
+
+timestamp:
+  created:
+    date_ymd: 20251130
+    day_of_week: Sunday
+    time_local: 06:12 PM
+    timezone: Central
+  last_updated:
+    date_ymd: 20251130
+    day_of_week: Sunday
+    time_local: 06:12 PM
+    timezone: Central
+
+memory:
+  ai_inputs:
+    type: notion_database
+    id: 5f6da6cc6a38445dad94e3f9ac7ba1ee
+    role: "Cross-model input, evaluation, and impact scoring"
+    schema:
+      - source_model
+      - transcript_summary
+      - decision_applied
+      - impact_score
+      - systems_touched
+      - reviewer
+      - tags
+      - evidence_links
+    timestamp_format:
+      date_ymd: YYYYMMDD
+      day_of_week: Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday
+      time_local: HH:MM AM/PM
+      timezone: Central|Eastern|Pacific|UTC
+
+orchestration:
+  agent_hub:
+    type: notion_page
+    id: 1fad0928b15f4f009949732b45a95b95
+    role: "Prime → Claude → MCP/GitHub relay control surface"
+    capabilities:
+      command_formats:
+        - /ao
+        - /msow
+        - /evidence
+        - /handoff
+        - /summary
+        - /codex-relay
+        - /portal-update
+        - /store-sync
+        - /relay-status
+        - /canon-sync
+        - /agent-verify
+        - /matrix-update
+      status_signals:
+        - G
+        - Y
+        - R
+      relay_handoffs: enabled
+      mcp_secrets_audit: enabled
+      verification_kanban: enabled
+  mcp_relay:
+    enabled: true
+    engine: github
+    description: "All persistent writes flow through MCP GitHub Relay; Notion AI is not used."
+
+flows:
+  default:
+    - id: flow.ai_input_classification
+      description: "Ingest → normalize → store → evaluate → log → impact"
+    - id: flow.agent_orchestration
+      description: "Route handoff from Prime → secondary models → MCP relay → Notion surfaces"
+    - id: flow.conversation_to_decision
+      description: "Interpret input, attach evidence, decide, log, and push through relay"
+
+modules:
+  - name: codex_portal_relay
+    version: 1.0
+    purpose: "Route Codex-level directives through MCP GitHub Relay into Canon and portals"
+  - name: portal_update
+    purpose: "Generate portal scaffolds and updates from Canon"
+  - name: store_sync
+    purpose: "Normalize stores across Matrix, CRM, HubSpot, Teamwork, DBs"
+  - name: relay_status
+    purpose: "Report MCP relay health, pending jobs, and errors"
+  - name: canon_sync
+    purpose: "Sync Canon between GitHub and Notion"
+  - name: agent_verify
+    purpose: "Verify MCP-linked repos and agent configs"
+  - name: matrix_update
+    purpose: "Safely update the Master Client Operational Matrix with evidence"
+
+governance:
+  session_logs:
+    pattern: "Session-timestamped logs with multi-model evaluation blocks"
+    required_fields:
+      - problem_statement
+      - transcript_reference
+      - cross_model_drafts
+      - evaluation_notes
+      - impact_score
+      - final_decision
+    timestamp:
+      format: YYYYMMDD / Day of Week / HH:MM AM/PM / Timezone
+  rules:
+    - "Evidence required for Canon, profile, flow, and matrix changes"
+    - "Do not invoke retired tools (e.g., Notion AI)"
+    - "All persistent changes flow through MCP GitHub Relay"
+    - "Use STOP / RESET / REALIGN / LOCK AUTONOMY when risk or ambiguity is high"

@@ -1,0 +1,53 @@
+id: lmaos
+version: 1.1
+name: "LMAOS – Lifecycle Marketing OS"
+status: Draft Canon
+inherit_from: activ8_ai
+
+timestamp:
+  created:
+    date_ymd: 20251130
+    day_of_week: Sunday
+    time_local: 06:12 PM
+    timezone: Central
+  last_updated:
+    date_ymd: 20251130
+    day_of_week: Sunday
+    time_local: 06:12 PM
+    timezone: Central
+
+orchestration:
+  agent_hub_integration:
+    enabled: true
+    description: "LMAOS routes work through the shared Agent Orchestration Hub using the MCP GitHub Relay."
+    use_cases:
+      - "multi-model drafting for campaign briefs"
+      - "cross-agent validation for messaging"
+      - "transcript-to-action routing"
+      - "slack signal routing → Notion container updates"
+    commands:
+      - /codex-relay
+      - /portal-update
+      - /store-sync
+      - /relay-status
+      - /canon-sync
+      - /agent-verify
+      - /matrix-update
+
+memory:
+  ai_inputs_shared: true
+
+flows:
+  - id: flow.lmaos_campaign_brief_to_launch
+    description: "Brief → multi-model drafts → evaluation → relay → portal updates"
+  - id: flow.lmaos_weekly_review
+    description: "Session log → evidence → decision → impact score → codex/portal sync"
+
+governance:
+  must_log:
+    - "all campaign briefs"
+    - "all message rewrites"
+    - "major data corrections"
+    - "changes routed through the Agent Orchestration Hub"
+  timestamp_requirements:
+    format: YYYYMMDD / Day of Week / HH:MM AM/PM / Timezone
