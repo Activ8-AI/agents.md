@@ -460,7 +460,7 @@ This Codex uses **MAJOR.MINOR.PATCH**:
   - Standardized timestamp format to:
     - `date_ymd` (YYYYMMDD)
     - `day_of_week`
-    - `time_local` (hh:mm AM/PM)
+    - `time_local` (HH:MM AM/PM)
     - `timezone`
   - Applied timestamp spec to:
     - this Codex header
