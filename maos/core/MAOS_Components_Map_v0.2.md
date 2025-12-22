@@ -1,6 +1,6 @@
 # MAOS Components Map
 
-version: 0.2
+version: 0.2.0
 status: Draft Canon
 
 timestamp:
