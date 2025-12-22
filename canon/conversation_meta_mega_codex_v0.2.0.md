@@ -456,7 +456,7 @@ This Codex uses **MAJOR.MINOR.PATCH**:
 
 ### 9.2 Change Log
 
-- **v0.2.0** (timestamp: 20251130, Sunday, 06:12 PM Central)
+- **v0.2.0** (timestamp follows the standard format introduced in this version)
   - Standardized timestamp format to:
     - `date_ymd` (YYYYMMDD)
     - `day_of_week`
