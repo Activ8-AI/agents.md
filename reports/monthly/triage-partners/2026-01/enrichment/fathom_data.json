@@ -1,0 +1,22 @@
+{
+  "client_slug": "triage-partners",
+  "period": "2026-01",
+  "date_range": {
+    "start": "2026-01-01",
+    "end": "2026-01-31"
+  },
+  "status": "no_data",
+  "swept_at": "2026-02-05T18:56:14.866595Z",
+  "meetings_found": 0,
+  "meetings": [],
+  "evidence": [
+    {
+      "type": "local_file",
+      "source": "/home/user/agents.md/vault/meetings/by_client/triage-partners"
+    },
+    {
+      "type": "api",
+      "source": "Fathom API (previously synced)"
+    }
+  ]
+}

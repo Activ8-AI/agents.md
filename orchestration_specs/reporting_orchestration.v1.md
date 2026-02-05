@@ -155,18 +155,63 @@ vault/ledger/report_jobs/generation_{timestamp}.json
 | fathom_sweep | Codex | Fathom API transcripts | Meeting summaries, action items |
 | claude_analysis | Claude | Draft report + enrichment data | Narrative insights, recommendations |
 
-### 5.2 Process
+### 5.2 Authentication
 
-1. Each agent receives the job via MCP agent-comms
-2. Agent pulls data from the assigned source
-3. Agent writes enrichment data back to the draft report
-4. Status updated in the dispatch ledger
+All GA4 and Google Ads access flows through the primary identity:
 
-### 5.3 Governance
+```yaml
+primary_identity: access@theleverageway.com
+org: Leverage Marketing Agency
+role: MCC admin / GA4 admin
+config: config/identity.v1.json
+```
+
+Team identities: `lmaai@theleverageway.com`, `stan@theleverageway.com`
+System identities: `codex@activ8ai.app`, `stan@activ8ai.app`
+
+### 5.3 Implementation
+
+```
+scripts/reports/run_enrichment.sh              ← Phase 3 orchestrator
+scripts/reports/enrichment/ga4_pull.sh         ← GA4 Data API v1beta
+scripts/reports/enrichment/ads_pull.sh         ← Google Ads API v18 + Meta API v21.0
+```
+
+**GA4 Pull** (`ga4_pull.sh`):
+- API: `analyticsdata.googleapis.com/v1beta`
+- Reports: channel overview (sessions, users, bounce rate, engagement), traffic sources (source/medium), landing pages (top 20)
+- Auth: OAuth2 refresh token or service account via `access@theleverageway.com`
+
+**Ads Pull** (`ads_pull.sh`):
+- Google Ads: `googleads.googleapis.com/v18` — GAQL queries for account overview, campaign performance, top 50 keywords
+- Meta Ads: `graph.facebook.com/v21.0` — campaign-level spend, impressions, ROAS
+- Auth: Developer token + OAuth2 (Google), long-lived access token (Meta)
+
+### 5.4 Process
+
+1. Orchestrator reads dispatch ledger for job list
+2. For each job, runs ga4_pull → ads_pull → fathom_sweep → claude_analysis
+3. Each task writes to `reports/monthly/{client}/{period}/enrichment/`
+4. Fathom sweep checks `vault/meetings/by_client/` for period-matched transcripts
+5. Claude analysis generates template referencing available enrichment data
+6. Enrichment ledger written to `vault/ledger/report_jobs/enrichment_{timestamp}.json`
+
+### 5.5 Outputs
+
+```
+reports/monthly/{client}/{period}/enrichment/
+├── ga4_data.json          ← Sessions, traffic, conversions by channel
+├── ads_data.json          ← Spend, ROAS, campaigns, keywords
+├── fathom_data.json       ← Meeting matches for period
+└── claude_analysis.json   ← Analysis template (pending human/agent review)
+```
+
+### 5.6 Governance
 
 - All enrichment data must include evidence references
 - Claude analysis must not invent metrics (use only data provided by Prime/Codex)
 - If data is unavailable, the field is marked `"status": "pending"` not fabricated
+- GA4/Ads property IDs must be set in `config/clients.v1.json` before live pulls
 
 ---
 
@@ -198,9 +243,13 @@ vault/ledger/report_jobs/generation_{timestamp}.json
 |------|---------|--------------|
 | `orchestration_specs/reporting_orchestration.v1.md` | This spec | v1 |
 | `schemas/weekly_report_schema.v1.json` | Report structure validation | v1 |
-| `config/clients.v1.json` | Client roster | v1 |
+| `config/clients.v1.json` | Client roster + integration IDs | v1 |
+| `config/identity.v1.json` | Identity/auth mappings for GA4/Ads | v1 |
 | `scripts/reports/run_monthly_reports.sh` | Phase 1 runner | v1 |
 | `scripts/reports/dispatch_monthly_jobs.sh` | Phase 2 dispatcher | v1 |
+| `scripts/reports/run_enrichment.sh` | Phase 3 orchestrator | v1 |
+| `scripts/reports/enrichment/ga4_pull.sh` | GA4 Data API pull | v1 |
+| `scripts/reports/enrichment/ads_pull.sh` | Google Ads + Meta Ads pull | v1 |
 
 ---
 
@@ -208,6 +257,17 @@ vault/ledger/report_jobs/generation_{timestamp}.json
 
 ```yaml
 integrations:
+  google_analytics:
+    api: "analyticsdata.googleapis.com/v1beta"
+    identity: "access@theleverageway.com"
+    role: "GA4 data pull for traffic, conversions, engagement"
+  google_ads:
+    api: "googleads.googleapis.com/v18"
+    identity: "access@theleverageway.com"
+    role: "Campaign performance, spend, ROAS, keywords"
+  meta_ads:
+    api: "graph.facebook.com/v21.0"
+    role: "Meta/Facebook campaign performance (where applicable)"
   mcp_agent_comms:
     port: 5060
     role: "Dispatch enrichment jobs to registered agents"
@@ -241,10 +301,19 @@ integrations:
 
 ### 10.1 Current Version
 
-1.0 — Initial reporting pipeline orchestration spec
+1.1 — Phase 3 enrichment implementation (GA4, Ads, Fathom, Claude)
 
 ### 10.2 Change Log
 
+- **v1.1** (20260205)
+  - Implemented Phase 3 enrichment scripts (ga4_pull.sh, ads_pull.sh, run_enrichment.sh)
+  - Added identity config (config/identity.v1.json) for access@theleverageway.com
+  - GA4 Data API v1beta: channel overview, traffic sources, landing pages
+  - Google Ads API v18: GAQL queries for campaigns, keywords, account totals
+  - Meta Ads API v21.0: campaign-level performance (where applicable)
+  - Fathom sweep pulls from vault/meetings/by_client/ transcript archive
+  - Claude analysis generates evidence-backed templates for human review
+  - Dry-run support across all enrichment tasks
 - **v1.0** (20260205)
   - Defined 4-phase pipeline (Generate → Dispatch → Enrich → Deliver)
   - Established job schema for enrichment tasks

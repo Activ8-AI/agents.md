@@ -1,0 +1,75 @@
+{
+  "version": "1.0",
+  "description": "Identity and access mappings for LMAOS integrations. Maps service accounts to Google, Meta, and internal platforms.",
+  "created_at": "2026-02-05T18:30:00Z",
+  "primary_identity": {
+    "email": "access@theleverageway.com",
+    "org": "Leverage Marketing Agency",
+    "role": "MCC admin / GA4 admin",
+    "services": ["google_analytics", "google_ads", "google_tag_manager", "google_search_console", "google_business_profile"]
+  },
+  "team_identities": [
+    {
+      "email": "lmaai@theleverageway.com",
+      "role": "AI operations",
+      "services": ["google_analytics", "google_ads"]
+    },
+    {
+      "email": "stan@theleverageway.com",
+      "role": "Operations lead",
+      "services": ["google_analytics", "google_ads", "google_tag_manager"]
+    }
+  ],
+  "system_identities": [
+    {
+      "email": "codex@activ8ai.app",
+      "role": "Agent identity — Codex (transcript analysis, code ops)",
+      "services": ["github", "fathom", "notion"]
+    },
+    {
+      "email": "stan@activ8ai.app",
+      "role": "Agent identity — system admin",
+      "services": ["github", "notion", "teamwork"]
+    }
+  ],
+  "google_analytics": {
+    "api": "analyticsdata.googleapis.com/v1beta",
+    "auth_method": "oauth2_service_account",
+    "scopes": [
+      "https://www.googleapis.com/auth/analytics.readonly"
+    ],
+    "mcc_identity": "access@theleverageway.com",
+    "credential_source": "GOOGLE_APPLICATION_CREDENTIALS or NOTION_SECRETS_REGISTRY",
+    "env_vars": {
+      "GOOGLE_APPLICATION_CREDENTIALS": "Path to service account JSON key",
+      "GA4_OAUTH_CLIENT_ID": "OAuth2 client ID (if using user-consent flow)",
+      "GA4_OAUTH_CLIENT_SECRET": "OAuth2 client secret",
+      "GA4_REFRESH_TOKEN": "Refresh token for access@theleverageway.com"
+    }
+  },
+  "google_ads": {
+    "api": "googleads.googleapis.com/v18",
+    "auth_method": "oauth2_refresh_token",
+    "scopes": [
+      "https://www.googleapis.com/auth/adwords"
+    ],
+    "mcc_identity": "access@theleverageway.com",
+    "credential_source": "GOOGLE_ADS_DEVELOPER_TOKEN + OAUTH2 or NOTION_SECRETS_REGISTRY",
+    "env_vars": {
+      "GOOGLE_ADS_DEVELOPER_TOKEN": "Developer token from MCC",
+      "GOOGLE_ADS_CLIENT_ID": "OAuth2 client ID",
+      "GOOGLE_ADS_CLIENT_SECRET": "OAuth2 client secret",
+      "GOOGLE_ADS_REFRESH_TOKEN": "Refresh token for access@theleverageway.com",
+      "GOOGLE_ADS_LOGIN_CUSTOMER_ID": "MCC customer ID (no dashes)"
+    }
+  },
+  "meta_ads": {
+    "api": "graph.facebook.com/v21.0",
+    "auth_method": "long_lived_access_token",
+    "credential_source": "META_ACCESS_TOKEN or NOTION_SECRETS_REGISTRY",
+    "env_vars": {
+      "META_ACCESS_TOKEN": "Long-lived user or system user access token",
+      "META_BUSINESS_ID": "Meta Business Manager ID"
+    }
+  }
+}

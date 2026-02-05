@@ -1,0 +1,42 @@
+{
+  "client_slug": "triage-partners",
+  "period": "2026-02-MTD",
+  "status": "pending_review",
+  "generated_at": "2026-02-05T18:56:15.605674Z",
+  "assigned_to": "claude",
+  "data_sources": {
+    "ga4_data": "available",
+    "ads_data": "available",
+    "fathom_data": "available"
+  },
+  "analysis": {
+    "executive_summary": "PENDING \u2014 Claude to synthesize from enrichment data",
+    "key_metrics_narrative": "PENDING \u2014 Derive from ga4_data + ads_data",
+    "meeting_insights": "PENDING \u2014 Extract themes from fathom_data",
+    "recommendations": [],
+    "risk_flags": [],
+    "opportunities": []
+  },
+  "governance": {
+    "rule": "No metrics fabrication \u2014 use only data from ga4_data.json and ads_data.json",
+    "missing_data_handling": "Mark as pending, do not estimate",
+    "review_required": true
+  },
+  "evidence": [
+    {
+      "type": "enrichment",
+      "source": "ga4_data.json",
+      "status": "available"
+    },
+    {
+      "type": "enrichment",
+      "source": "ads_data.json",
+      "status": "available"
+    },
+    {
+      "type": "enrichment",
+      "source": "fathom_data.json",
+      "status": "available"
+    }
+  ]
+}

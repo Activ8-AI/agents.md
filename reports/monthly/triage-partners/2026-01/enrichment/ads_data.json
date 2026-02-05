@@ -1,0 +1,64 @@
+{
+  "client_slug": "triage-partners",
+  "period": "2026-01",
+  "date_range": {
+    "start": "2026-01-01",
+    "end": "2026-01-31"
+  },
+  "status": "dry_run",
+  "pulled_at": "2026-02-05T18:56:14.804223Z",
+  "auth_identity": "access@theleverageway.com",
+  "google_ads": {
+    "customer_id": "NOT_SET",
+    "status": "pending",
+    "note": "Requires GOOGLE_ADS_DEVELOPER_TOKEN + OAuth credentials for access@theleverageway.com",
+    "queries": {
+      "account_overview": "SELECT   metrics.impressions,   metrics.clicks,   metrics.cost_micros,   metrics.conversions,   metrics.conversions_value,   metrics.ctr,   metrics.average_cpc,   metrics.cost_per_conversion FROM customer WHERE segments.date BETWEEN '2026-01-01' AND '2026-01-31' ",
+      "campaign_performance": "SELECT   campaign.name,   campaign.status,   campaign.advertising_channel_type,   metrics.impressions,   metrics.clicks,   metrics.cost_micros,   metrics.conversions,   metrics.conversions_value,   metrics.cost_per_conversion,   metrics.ctr,   metrics.average_cpc,   metrics.search_impression_share FROM campaign WHERE segments.date BETWEEN '2026-01-01' AND '2026-01-31'   AND campaign.status != 'REMOVED' ORDER BY metrics.cost_micros DESC ",
+      "top_keywords": "SELECT   ad_group.name,   ad_group_criterion.keyword.text,   ad_group_criterion.keyword.match_type,   metrics.impressions,   metrics.clicks,   metrics.cost_micros,   metrics.conversions,   metrics.ctr,   metrics.average_cpc,   metrics.quality_score FROM keyword_view WHERE segments.date BETWEEN '2026-01-01' AND '2026-01-31' ORDER BY metrics.cost_micros DESC LIMIT 50 "
+    },
+    "expected_metrics": {
+      "total_spend": {
+        "value": null,
+        "currency": "USD"
+      },
+      "total_impressions": null,
+      "total_clicks": null,
+      "total_conversions": null,
+      "avg_cpc": null,
+      "avg_ctr": null,
+      "roas": null,
+      "campaigns": []
+    }
+  },
+  "meta_ads": {
+    "ad_account_id": "NOT_SET",
+    "status": "not_configured",
+    "note": "No Meta Ads account configured for this client",
+    "expected_metrics": {
+      "total_spend": {
+        "value": null,
+        "currency": "USD"
+      },
+      "total_impressions": null,
+      "total_reach": null,
+      "total_clicks": null,
+      "campaigns": []
+    }
+  },
+  "evidence": [
+    {
+      "type": "api",
+      "source": "Google Ads API v18",
+      "identity": "access@theleverageway.com"
+    },
+    {
+      "type": "api",
+      "source": "Meta Marketing API v21.0"
+    },
+    {
+      "type": "github_file",
+      "path": "config/clients.v1.json"
+    }
+  ]
+}

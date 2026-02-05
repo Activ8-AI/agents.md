@@ -1,0 +1,137 @@
+{
+  "client_slug": "discount-equipment",
+  "period": "2026-01",
+  "ga4_property_id": "NOT_SET",
+  "date_range": {
+    "start": "2026-01-01",
+    "end": "2026-01-31"
+  },
+  "status": "dry_run",
+  "pulled_at": "2026-02-05T18:56:13.148514Z",
+  "auth_identity": "access@theleverageway.com",
+  "requests": {
+    "channel_overview": {
+      "dateRanges": [
+        {
+          "startDate": "2026-01-01",
+          "endDate": "2026-01-31"
+        }
+      ],
+      "metrics": [
+        {
+          "name": "sessions"
+        },
+        {
+          "name": "totalUsers"
+        },
+        {
+          "name": "newUsers"
+        },
+        {
+          "name": "screenPageViews"
+        },
+        {
+          "name": "bounceRate"
+        },
+        {
+          "name": "averageSessionDuration"
+        },
+        {
+          "name": "conversions"
+        },
+        {
+          "name": "engagementRate"
+        }
+      ],
+      "dimensions": [
+        {
+          "name": "sessionDefaultChannelGroup"
+        }
+      ]
+    },
+    "traffic_sources": {
+      "dateRanges": [
+        {
+          "startDate": "2026-01-01",
+          "endDate": "2026-01-31"
+        }
+      ],
+      "metrics": [
+        {
+          "name": "sessions"
+        },
+        {
+          "name": "totalUsers"
+        },
+        {
+          "name": "conversions"
+        }
+      ],
+      "dimensions": [
+        {
+          "name": "sessionSource"
+        },
+        {
+          "name": "sessionMedium"
+        }
+      ],
+      "limit": 25
+    },
+    "landing_pages": {
+      "dateRanges": [
+        {
+          "startDate": "2026-01-01",
+          "endDate": "2026-01-31"
+        }
+      ],
+      "metrics": [
+        {
+          "name": "sessions"
+        },
+        {
+          "name": "conversions"
+        },
+        {
+          "name": "bounceRate"
+        }
+      ],
+      "dimensions": [
+        {
+          "name": "landingPage"
+        }
+      ],
+      "orderBys": [
+        {
+          "metric": {
+            "metricName": "sessions"
+          },
+          "desc": true
+        }
+      ],
+      "limit": 20
+    }
+  },
+  "data": {
+    "channel_overview": {
+      "status": "pending",
+      "note": "Requires GA4 property ID and OAuth credentials"
+    },
+    "traffic_sources": {
+      "status": "pending"
+    },
+    "landing_pages": {
+      "status": "pending"
+    }
+  },
+  "evidence": [
+    {
+      "type": "api",
+      "source": "GA4 Data API v1beta",
+      "identity": "access@theleverageway.com"
+    },
+    {
+      "type": "github_file",
+      "path": "config/clients.v1.json"
+    }
+  ]
+}

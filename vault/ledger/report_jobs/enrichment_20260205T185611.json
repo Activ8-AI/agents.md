@@ -1,0 +1,28 @@
+{
+  "enrichment_id": "enrichment_20260205T185611",
+  "timestamp": "2026-02-05T18:56:18.416196Z",
+  "pipeline_version": "1.0",
+  "phase": 3,
+  "dispatch_source": "/home/user/agents.md/vault/ledger/report_jobs/dispatch_20260205T182301.json",
+  "task_filter": "all",
+  "dry_run": true,
+  "jobs_processed": 10,
+  "jobs_failed": 0,
+  "auth_identity": "access@theleverageway.com",
+  "enrichment_tasks": [
+    "ga4_pull",
+    "ads_pull",
+    "fathom_sweep",
+    "claude_analysis"
+  ],
+  "evidence": [
+    {
+      "type": "github_file",
+      "path": "config/identity.v1.json"
+    },
+    {
+      "type": "github_file",
+      "path": "/home/user/agents.md/vault/ledger/report_jobs/dispatch_20260205T182301.json"
+    }
+  ]
+}
