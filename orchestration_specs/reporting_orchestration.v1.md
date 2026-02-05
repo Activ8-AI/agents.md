@@ -1,0 +1,253 @@
+# Reporting Orchestration Specification
+
+version: 1.0
+status: Draft Canon (implementation-ready)
+profile: lmaos
+layer: orchestration
+
+timestamp:
+  created:
+    date_ymd: 20260205
+    day_of_week: Thursday
+    time_local: 02:30 PM
+    timezone: Central
+  last_updated:
+    date_ymd: 20260205
+    day_of_week: Thursday
+    time_local: 02:30 PM
+    timezone: Central
+
+applies_to:
+  - profile: lmaos
+  - layer: orchestration
+  - component: mcp_github_relay
+  - flow: flow.lmaos_weekly_review
+
+---
+
+## 1. Purpose
+
+This spec defines the 4-phase reporting pipeline for LMAOS client reporting. It operationalizes the `flow.lmaos_weekly_review` pattern from the MAOS Profile, routing report generation through evidence gathering, enrichment, and delivery.
+
+The pipeline ensures:
+
+- Reports are generated from structured client configs (not invented state)
+- Each report follows a versioned JSON schema
+- Enrichment tasks are dispatched to the correct agent (Prime, Codex, Claude)
+- All outputs are logged to the vault ledger
+- Delivery is governed by Charter compliance checks
+
+---
+
+## 2. Pipeline Overview
+
+```
+Phase 1: Generate    → Draft reports from client config + period
+Phase 2: Dispatch    → Queue enrichment jobs to agents via MCP
+Phase 3: Enrich      → Agents pull GA4, Ads, Fathom, Claude analysis
+Phase 4: Deliver     → Finalized reports pushed to portals + Teamwork
+```
+
+---
+
+## 3. Phase 1 — Report Generation
+
+### 3.1 Trigger
+
+- Manual: `scripts/reports/run_monthly_reports.sh`
+- Scheduled: GitHub Actions cron (1st and 15th of month)
+
+### 3.2 Inputs
+
+- `config/clients.v1.json` — Client roster with slugs, statuses, Teamwork/Notion IDs
+- `schemas/weekly_report_schema.v1.json` — Report structure validation
+- Period parameters: `YYYY-MM` (full month) or `YYYY-MM-MTD` (month-to-date)
+
+### 3.3 Process
+
+For each active client in the config:
+
+1. Read client metadata (slug, display name, services, contacts)
+2. Initialize a draft report JSON conforming to the schema
+3. Initialize a companion Markdown report for human review
+4. Write both to `reports/monthly/{client_slug}/{period}/`
+5. Record the generation event in a manifest
+
+### 3.4 Outputs
+
+```
+reports/monthly/{client_slug}/{period}/draft_report.json
+reports/monthly/{client_slug}/{period}/draft_report.md
+reports/monthly/manifest_{timestamp}.json
+```
+
+### 3.5 Evidence
+
+```yaml
+evidence:
+  - type: github_file
+    path: config/clients.v1.json
+    description: "Client roster driving report generation"
+  - type: github_file
+    path: schemas/weekly_report_schema.v1.json
+    description: "Schema enforcing report structure"
+```
+
+---
+
+## 4. Phase 2 — Job Dispatch
+
+### 4.1 Trigger
+
+- Automatically after Phase 1 completes
+- Manual: `scripts/reports/dispatch_monthly_jobs.sh`
+
+### 4.2 Process
+
+For each generated draft report:
+
+1. Create an enrichment job with 4 tasks:
+   - `ga4_pull` → assigned to Prime (GA4 data extraction)
+   - `ads_pull` → assigned to Prime (Google/Meta Ads data)
+   - `fathom_sweep` → assigned to Codex (meeting transcript analysis)
+   - `claude_analysis` → assigned to Claude (narrative + insights)
+2. Dispatch jobs via MCP agent-comms (port 5060) or relay (port 5055)
+3. Log dispatch results to `vault/ledger/report_jobs/`
+
+### 4.3 Job Schema
+
+```json
+{
+  "job_id": "uuid",
+  "client_slug": "string",
+  "period": "string",
+  "tasks": [
+    {
+      "task_id": "string",
+      "type": "ga4_pull|ads_pull|fathom_sweep|claude_analysis",
+      "assigned_to": "prime|codex|claude",
+      "status": "queued|in_progress|completed|failed",
+      "created_at": "ISO8601"
+    }
+  ],
+  "status": "dispatched|enriching|completed",
+  "dispatched_at": "ISO8601"
+}
+```
+
+### 4.4 Outputs
+
+```
+vault/ledger/report_jobs/dispatch_{timestamp}.json
+vault/ledger/report_jobs/generation_{timestamp}.json
+```
+
+---
+
+## 5. Phase 3 — Enrichment
+
+### 5.1 Agent Responsibilities
+
+| Task | Agent | Source | Output |
+|------|-------|--------|--------|
+| ga4_pull | Prime | GA4 API via BigQuery | Session, conversion, traffic data |
+| ads_pull | Prime | Google Ads / Meta Ads API | Spend, impressions, ROAS |
+| fathom_sweep | Codex | Fathom API transcripts | Meeting summaries, action items |
+| claude_analysis | Claude | Draft report + enrichment data | Narrative insights, recommendations |
+
+### 5.2 Process
+
+1. Each agent receives the job via MCP agent-comms
+2. Agent pulls data from the assigned source
+3. Agent writes enrichment data back to the draft report
+4. Status updated in the dispatch ledger
+
+### 5.3 Governance
+
+- All enrichment data must include evidence references
+- Claude analysis must not invent metrics (use only data provided by Prime/Codex)
+- If data is unavailable, the field is marked `"status": "pending"` not fabricated
+
+---
+
+## 6. Phase 4 — Delivery
+
+### 6.1 Process
+
+1. Merge enrichment data into final report
+2. Validate against `schemas/weekly_report_schema.v1.json`
+3. Generate final Markdown for human review
+4. Push summary to:
+   - Teamwork project (as message or task)
+   - Notion client portal (as callout block)
+5. Log delivery to vault ledger
+
+### 6.2 Delivery Channels
+
+| Channel | Method | ID Source |
+|---------|--------|-----------|
+| Teamwork | POST /projects/{id}/messages | config/clients.v1.json → teamwork_project_id |
+| Notion | PATCH /blocks/{id}/children | config/clients.v1.json → notion_portal_id |
+| Email | SMTP via n8n workflow | config/clients.v1.json → contacts |
+
+---
+
+## 7. File Inventory
+
+| File | Purpose | Version Lock |
+|------|---------|--------------|
+| `orchestration_specs/reporting_orchestration.v1.md` | This spec | v1 |
+| `schemas/weekly_report_schema.v1.json` | Report structure validation | v1 |
+| `config/clients.v1.json` | Client roster | v1 |
+| `scripts/reports/run_monthly_reports.sh` | Phase 1 runner | v1 |
+| `scripts/reports/dispatch_monthly_jobs.sh` | Phase 2 dispatcher | v1 |
+
+---
+
+## 8. Integration Points
+
+```yaml
+integrations:
+  mcp_agent_comms:
+    port: 5060
+    role: "Dispatch enrichment jobs to registered agents"
+  mcp_teamwork:
+    port: 5059
+    role: "Post report summaries to client projects"
+  mcp_notion:
+    port: 5064
+    role: "Update client portal pages"
+  relay:
+    port: 5055
+    role: "Fallback dispatch when agent-comms unavailable"
+  fathom:
+    api: "api.fathom.ai/external/v1"
+    role: "Meeting transcript source for fathom_sweep tasks"
+```
+
+---
+
+## 9. Governance & Safety
+
+- **STOP**: Halt report generation if client config is invalid
+- **REALIGN**: Re-check against Canon if report schema changes
+- **LOCK AUTONOMY**: Require human review before delivering to client-facing portals
+- No metrics are fabricated — missing data is marked pending
+- All writes flow through MCP GitHub Relay per Canon §2.4
+
+---
+
+## 10. Versioning
+
+### 10.1 Current Version
+
+1.0 — Initial reporting pipeline orchestration spec
+
+### 10.2 Change Log
+
+- **v1.0** (20260205)
+  - Defined 4-phase pipeline (Generate → Dispatch → Enrich → Deliver)
+  - Established job schema for enrichment tasks
+  - Mapped agent responsibilities (Prime, Codex, Claude)
+  - Integrated with MCP agent-comms, Teamwork, Notion, Fathom
+  - Aligned with LMAOS profile flow.lmaos_weekly_review

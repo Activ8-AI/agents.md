@@ -1,0 +1,11 @@
+{
+  "dispatch_id": "dispatch_20260205T182301",
+  "dispatched_at": "2026-02-05T18:23:05Z",
+  "pipeline_version": "1.0",
+  "manifest_source": "/home/user/agents.md/reports/monthly/manifest_20260205T182253.json",
+  "total_dispatched": 10,
+  "agent_comms_endpoint": "http://localhost:5060/invoke",
+  "relay_endpoint": "http://localhost:5055/relay",
+  "dry_run": true,
+  "jobs": [{"job_id":"ca50c036-ff41-44ef-bc01-f8b6f1801d57","client":"modern-office-furniture","period":"2026-01","status":"logged","message_id":"none"},{"job_id":"83db0e83-ecf4-4e5c-bae7-e4dfadff8805","client":"modern-office-furniture","period":"2026-02-MTD","status":"logged","message_id":"none"},{"job_id":"d420059c-bbef-48a4-a893-764a6f0a420e","client":"discount-equipment","period":"2026-01","status":"logged","message_id":"none"},{"job_id":"dd14ee02-303f-4245-a0d4-cb825429701f","client":"discount-equipment","period":"2026-02-MTD","status":"logged","message_id":"none"},{"job_id":"9638d1e8-ca29-427a-ac16-cc9f9bbeb5d6","client":"triage-partners","period":"2026-01","status":"logged","message_id":"none"},{"job_id":"05fd9a90-90da-44a1-a9d5-0887b3517da5","client":"triage-partners","period":"2026-02-MTD","status":"logged","message_id":"none"},{"job_id":"f42a6070-f697-4380-b640-4b17b7a2bbf5","client":"wilson-case","period":"2026-01","status":"logged","message_id":"none"},{"job_id":"ff30f0cf-c62f-4fa7-a59f-a639057e9ef7","client":"wilson-case","period":"2026-02-MTD","status":"logged","message_id":"none"},{"job_id":"7947be92-2fac-4333-b5ed-251f27633c91","client":"hansen-pole-buildings","period":"2026-01","status":"logged","message_id":"none"},{"job_id":"f0d20294-136e-4ec0-b52d-ad7a6786b7ef","client":"hansen-pole-buildings","period":"2026-02-MTD","status":"logged","message_id":"none"}]
+}

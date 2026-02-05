@@ -1,0 +1,103 @@
+{
+  "report_id": "6d96a03a-d3dd-45d5-8449-fc7df9d8ead5",
+  "schema_version": "1.0",
+  "client": {
+    "slug": "modern-office-furniture",
+    "display_name": "Modern Office Furniture",
+    "teamwork_project_id": "65343",
+    "notion_portal_id": null
+  },
+  "period": {
+    "label": "January 2026",
+    "start_date": "2026-01-01",
+    "end_date": "2026-01-31",
+    "type": "full_month"
+  },
+  "generated_at": "2026-02-05T18:22:53Z",
+  "status": "draft",
+  "sections": {
+    "executive_summary": {
+      "status": "pending",
+      "content": "",
+      "highlights": [],
+      "concerns": []
+    },
+    "traffic": {
+      "status": "pending",
+      "sessions": null,
+      "users": null,
+      "new_users": null,
+      "pageviews": null,
+      "bounce_rate": null,
+      "avg_session_duration": null,
+      "top_channels": [],
+      "period_comparison": {
+        "sessions_delta_pct": null,
+        "users_delta_pct": null,
+        "conversions_delta_pct": null
+      },
+      "source": "ga4",
+      "enriched_by": ""
+    },
+    "paid_media": {
+      "status": "pending",
+      "total_spend": null,
+      "impressions": null,
+      "clicks": null,
+      "ctr": null,
+      "conversions": null,
+      "cost_per_conversion": null,
+      "roas": null,
+      "platforms": [],
+      "source": "google_ads",
+      "enriched_by": ""
+    },
+    "seo": {
+      "status": "pending",
+      "organic_sessions": null,
+      "organic_conversions": null,
+      "keywords_tracked": null,
+      "keywords_top_10": null,
+      "keywords_improved": null,
+      "keywords_declined": null,
+      "top_pages": [],
+      "source": "ga4",
+      "enriched_by": ""
+    },
+    "meetings": {
+      "status": "pending",
+      "total_meetings": null,
+      "meeting_list": [],
+      "source": "fathom",
+      "enriched_by": ""
+    },
+    "recommendations": {
+      "status": "pending",
+      "items": [],
+      "enriched_by": ""
+    }
+  },
+  "evidence": [
+    {
+      "type": "github_file",
+      "path": "config/clients.v1.json",
+      "description": "Client configuration source"
+    },
+    {
+      "type": "github_file",
+      "path": "schemas/weekly_report_schema.v1.json",
+      "description": "Report schema validation"
+    }
+  ],
+  "enrichment_jobs": [
+    {"task_type": "ga4_pull", "assigned_to": "prime", "status": "queued", "completed_at": null},
+    {"task_type": "ads_pull", "assigned_to": "prime", "status": "queued", "completed_at": null},
+    {"task_type": "fathom_sweep", "assigned_to": "codex", "status": "queued", "completed_at": null},
+    {"task_type": "claude_analysis", "assigned_to": "claude", "status": "queued", "completed_at": null}
+  ],
+  "delivery": {
+    "teamwork_message_id": null,
+    "notion_block_id": null,
+    "delivered_at": null
+  }
+}

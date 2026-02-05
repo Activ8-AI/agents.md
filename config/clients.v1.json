@@ -1,0 +1,120 @@
+{
+  "$schema": "../schemas/weekly_report_schema.v1.json",
+  "version": "1.0",
+  "description": "LMAOS client roster for reporting pipeline. Source of truth for client slugs, service mappings, and integration IDs.",
+  "generated_at": "2026-02-05T14:30:00Z",
+  "clients": [
+    {
+      "slug": "modern-office-furniture",
+      "display_name": "Modern Office Furniture",
+      "status": "active",
+      "services": ["paid_media", "seo", "content", "web_dev"],
+      "cadence": "weekly",
+      "teamwork_project_id": "65343",
+      "notion_portal_id": null,
+      "contacts": {
+        "primary": "Client Contact",
+        "account_manager": "Bob"
+      },
+      "integrations": {
+        "ga4_property_id": null,
+        "google_ads_id": null,
+        "meta_ads_id": null,
+        "fathom_tag": "modern_office"
+      }
+    },
+    {
+      "slug": "discount-equipment",
+      "display_name": "Discount Equipment",
+      "status": "active",
+      "services": ["paid_media", "seo", "email_sms", "content"],
+      "cadence": "biweekly",
+      "teamwork_project_id": "65364",
+      "notion_portal_id": null,
+      "contacts": {
+        "primary": "Client Contact",
+        "account_manager": "Bob"
+      },
+      "integrations": {
+        "ga4_property_id": null,
+        "google_ads_id": null,
+        "meta_ads_id": null,
+        "klaviyo_id": null,
+        "fathom_tag": "discount_equipment"
+      }
+    },
+    {
+      "slug": "triage-partners",
+      "display_name": "Triage Partners",
+      "status": "active",
+      "services": ["paid_media", "seo", "linkedin", "content"],
+      "cadence": "weekly",
+      "teamwork_project_id": "498712",
+      "notion_portal_id": null,
+      "contacts": {
+        "primary": "Client Contact",
+        "account_manager": "Bob"
+      },
+      "integrations": {
+        "ga4_property_id": null,
+        "google_ads_id": null,
+        "linkedin_ads_id": null,
+        "fathom_tag": "triage_partners"
+      }
+    },
+    {
+      "slug": "wilson-case",
+      "display_name": "Wilson Case",
+      "status": "active",
+      "services": ["paid_media", "seo"],
+      "cadence": "monthly",
+      "teamwork_project_id": "233786",
+      "notion_portal_id": null,
+      "contacts": {
+        "primary": "Client Contact",
+        "account_manager": "Bob"
+      },
+      "integrations": {
+        "ga4_property_id": null,
+        "google_ads_id": null,
+        "fathom_tag": "wilson_case"
+      }
+    },
+    {
+      "slug": "hansen-pole-buildings",
+      "display_name": "Hansen Pole Buildings",
+      "status": "active",
+      "services": ["paid_media", "seo", "lead_gen", "crm"],
+      "cadence": "monthly",
+      "teamwork_project_id": "118388",
+      "notion_portal_id": null,
+      "contacts": {
+        "primary": "Client Contact",
+        "account_manager": "Bob"
+      },
+      "integrations": {
+        "ga4_property_id": null,
+        "google_ads_id": null,
+        "fathom_tag": "hansen_pole"
+      }
+    },
+    {
+      "slug": "br-real-estate",
+      "display_name": "BR Real Estate",
+      "status": "monitored_exit",
+      "services": ["seo"],
+      "cadence": "monthly",
+      "teamwork_project_id": "482399",
+      "notion_portal_id": null,
+      "contacts": {
+        "primary": "Client Contact",
+        "account_manager": "Bob"
+      },
+      "integrations": {
+        "ga4_property_id": null,
+        "fathom_tag": "br_real_estate"
+      },
+      "notes": "Monitored exit - reporting continues but no active campaign management"
+    }
+  ]
+}

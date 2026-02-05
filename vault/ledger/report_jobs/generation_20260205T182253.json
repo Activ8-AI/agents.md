@@ -1,0 +1,26 @@
+{
+  "event": "report_generation",
+  "timestamp": "2026-02-05T18:22:53Z",
+  "pipeline_version": "1.0",
+  "phase": 1,
+  "trigger": "manual",
+  "config_source": "config/clients.v1.json",
+  "schema_version": "1.0",
+  "reports_generated": 10,
+  "clients_processed": 5,
+  "clients_skipped": 1,
+  "periods": ["2026-01", "2026-02-MTD"],
+  "manifest": "reports/monthly/manifest_20260205T182253.json",
+  "evidence": [
+    {
+      "type": "github_file",
+      "path": "config/clients.v1.json",
+      "description": "Client roster driving generation"
+    },
+    {
+      "type": "github_file",
+      "path": "orchestration_specs/reporting_orchestration.v1.md",
+      "description": "Orchestration spec defining Phase 1"
+    }
+  ]
+}

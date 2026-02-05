@@ -1,0 +1,333 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Activ8-AI/agents.md/schemas/weekly_report_schema.v1.json",
+  "title": "LMAOS Client Report",
+  "description": "Schema for structured client reporting within the LMAOS reporting pipeline. Conforms to MAOS Canon evidence and logging requirements.",
+  "version": "1.0",
+  "type": "object",
+  "required": [
+    "report_id",
+    "schema_version",
+    "client",
+    "period",
+    "generated_at",
+    "status",
+    "sections"
+  ],
+  "properties": {
+    "report_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for this report instance"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Version of this schema"
+    },
+    "client": {
+      "type": "object",
+      "required": ["slug", "display_name"],
+      "properties": {
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$",
+          "description": "URL-safe client identifier"
+        },
+        "display_name": {
+          "type": "string",
+          "description": "Human-readable client name"
+        },
+        "teamwork_project_id": {
+          "type": ["string", "null"],
+          "description": "Teamwork project ID for delivery"
+        },
+        "notion_portal_id": {
+          "type": ["string", "null"],
+          "description": "Notion portal page ID for delivery"
+        }
+      }
+    },
+    "period": {
+      "type": "object",
+      "required": ["label", "start_date", "end_date", "type"],
+      "properties": {
+        "label": {
+          "type": "string",
+          "description": "Display label (e.g., 'January 2026', 'February 2026 MTD')"
+        },
+        "start_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Period start date (YYYY-MM-DD)"
+        },
+        "end_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Period end date (YYYY-MM-DD)"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["full_month", "mtd", "weekly", "quarterly"],
+          "description": "Period type"
+        }
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO8601 timestamp of report generation"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "enriching", "review", "final", "delivered"],
+      "description": "Current report lifecycle stage"
+    },
+    "sections": {
+      "type": "object",
+      "required": ["executive_summary", "traffic", "paid_media", "seo", "meetings"],
+      "properties": {
+        "executive_summary": {
+          "type": "object",
+          "required": ["status", "content"],
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["pending", "draft", "final"],
+              "description": "Section completion status"
+            },
+            "content": {
+              "type": "string",
+              "description": "Executive summary narrative"
+            },
+            "highlights": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Key highlights for the period"
+            },
+            "concerns": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Areas of concern or risk"
+            }
+          }
+        },
+        "traffic": {
+          "type": "object",
+          "required": ["status"],
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["pending", "draft", "final"]
+            },
+            "sessions": { "type": ["number", "null"] },
+            "users": { "type": ["number", "null"] },
+            "new_users": { "type": ["number", "null"] },
+            "pageviews": { "type": ["number", "null"] },
+            "bounce_rate": { "type": ["number", "null"] },
+            "avg_session_duration": { "type": ["number", "null"] },
+            "top_channels": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "channel": { "type": "string" },
+                  "sessions": { "type": "number" },
+                  "conversions": { "type": "number" }
+                }
+              }
+            },
+            "period_comparison": {
+              "type": "object",
+              "properties": {
+                "sessions_delta_pct": { "type": ["number", "null"] },
+                "users_delta_pct": { "type": ["number", "null"] },
+                "conversions_delta_pct": { "type": ["number", "null"] }
+              }
+            },
+            "source": {
+              "type": "string",
+              "description": "Data source (e.g., 'ga4', 'bigquery')"
+            },
+            "enriched_by": {
+              "type": "string",
+              "description": "Agent that enriched this section"
+            }
+          }
+        },
+        "paid_media": {
+          "type": "object",
+          "required": ["status"],
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["pending", "draft", "final"]
+            },
+            "total_spend": { "type": ["number", "null"] },
+            "impressions": { "type": ["number", "null"] },
+            "clicks": { "type": ["number", "null"] },
+            "ctr": { "type": ["number", "null"] },
+            "conversions": { "type": ["number", "null"] },
+            "cost_per_conversion": { "type": ["number", "null"] },
+            "roas": { "type": ["number", "null"] },
+            "platforms": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "platform": {
+                    "type": "string",
+                    "enum": ["google_ads", "meta_ads", "linkedin_ads", "bing_ads"]
+                  },
+                  "spend": { "type": "number" },
+                  "conversions": { "type": "number" },
+                  "roas": { "type": ["number", "null"] }
+                }
+              }
+            },
+            "source": { "type": "string" },
+            "enriched_by": { "type": "string" }
+          }
+        },
+        "seo": {
+          "type": "object",
+          "required": ["status"],
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["pending", "draft", "final"]
+            },
+            "organic_sessions": { "type": ["number", "null"] },
+            "organic_conversions": { "type": ["number", "null"] },
+            "keywords_tracked": { "type": ["number", "null"] },
+            "keywords_top_10": { "type": ["number", "null"] },
+            "keywords_improved": { "type": ["number", "null"] },
+            "keywords_declined": { "type": ["number", "null"] },
+            "top_pages": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "page": { "type": "string" },
+                  "sessions": { "type": "number" },
+                  "position_avg": { "type": "number" }
+                }
+              }
+            },
+            "source": { "type": "string" },
+            "enriched_by": { "type": "string" }
+          }
+        },
+        "meetings": {
+          "type": "object",
+          "required": ["status"],
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["pending", "draft", "final"]
+            },
+            "total_meetings": { "type": ["number", "null"] },
+            "meeting_list": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "date": { "type": "string", "format": "date" },
+                  "title": { "type": "string" },
+                  "participants": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "summary": { "type": "string" },
+                  "action_items": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "fathom_url": { "type": ["string", "null"] }
+                }
+              }
+            },
+            "source": { "type": "string" },
+            "enriched_by": { "type": "string" }
+          }
+        },
+        "recommendations": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["pending", "draft", "final"]
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "category": {
+                    "type": "string",
+                    "enum": ["paid_media", "seo", "content", "technical", "strategy"]
+                  },
+                  "priority": {
+                    "type": "string",
+                    "enum": ["high", "medium", "low"]
+                  },
+                  "recommendation": { "type": "string" },
+                  "evidence": { "type": "string" }
+                }
+              }
+            },
+            "enriched_by": { "type": "string" }
+          }
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "description"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["notion_page", "github_file", "url", "api_response"]
+          },
+          "id": { "type": "string" },
+          "path": { "type": "string" },
+          "href": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      },
+      "description": "Evidence references per Canon requirement (Codex v0.2.0 section 2.3)"
+    },
+    "enrichment_jobs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "task_type": { "type": "string" },
+          "assigned_to": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["queued", "in_progress", "completed", "failed"]
+          },
+          "completed_at": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "delivery": {
+      "type": "object",
+      "properties": {
+        "teamwork_message_id": { "type": ["string", "null"] },
+        "notion_block_id": { "type": ["string", "null"] },
+        "delivered_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

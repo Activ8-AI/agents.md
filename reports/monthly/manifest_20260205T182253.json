@@ -1,0 +1,13 @@
+{
+  "manifest_id": "manifest_20260205T182253",
+  "generated_at": "2026-02-05T18:22:54Z",
+  "pipeline_version": "1.0",
+  "config_source": "config/clients.v1.json",
+  "schema_version": "1.0",
+  "reports_generated": 10,
+  "periods": {
+    "full_month": "2026-01",
+    "mtd": "2026-02-MTD"
+  },
+  "entries": [{"client":"modern-office-furniture","period":"2026-01","type":"full_month","path":"reports/monthly/modern-office-furniture/2026-01"},{"client":"modern-office-furniture","period":"2026-02-MTD","type":"mtd","path":"reports/monthly/modern-office-furniture/2026-02-MTD"},{"client":"discount-equipment","period":"2026-01","type":"full_month","path":"reports/monthly/discount-equipment/2026-01"},{"client":"discount-equipment","period":"2026-02-MTD","type":"mtd","path":"reports/monthly/discount-equipment/2026-02-MTD"},{"client":"triage-partners","period":"2026-01","type":"full_month","path":"reports/monthly/triage-partners/2026-01"},{"client":"triage-partners","period":"2026-02-MTD","type":"mtd","path":"reports/monthly/triage-partners/2026-02-MTD"},{"client":"wilson-case","period":"2026-01","type":"full_month","path":"reports/monthly/wilson-case/2026-01"},{"client":"wilson-case","period":"2026-02-MTD","type":"mtd","path":"reports/monthly/wilson-case/2026-02-MTD"},{"client":"hansen-pole-buildings","period":"2026-01","type":"full_month","path":"reports/monthly/hansen-pole-buildings/2026-01"},{"client":"hansen-pole-buildings","period":"2026-02-MTD","type":"mtd","path":"reports/monthly/hansen-pole-buildings/2026-02-MTD"}]
+}
