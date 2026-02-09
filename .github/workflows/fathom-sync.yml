@@ -1,0 +1,168 @@
+name: Fathom Transcript Sync
+
+on:
+  schedule:
+    # Daily at 6 AM UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      days_back:
+        description: 'Number of days to look back for meetings'
+        required: false
+        default: '7'
+        type: string
+
+permissions:
+  contents: write
+
+env:
+  FATHOM_API_TOKEN: ${{ secrets.FATHOM_API_TOKEN }}
+
+jobs:
+  sync:
+    name: "Sync Fathom Transcripts"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate Fathom token
+        run: |
+          if [ -z "$FATHOM_API_TOKEN" ]; then
+            echo "::error::FATHOM_API_TOKEN not set in repository secrets"
+            exit 1
+          fi
+          echo "Fathom token present (${#FATHOM_API_TOKEN} chars)"
+
+      - name: Pull meetings from Fathom API
+        run: |
+          DAYS_BACK="${{ github.event.inputs.days_back || '7' }}"
+          SINCE=$(date -u -d "$DAYS_BACK days ago" +%Y-%m-%dT00:00:00Z 2>/dev/null || \
+                  date -u -v-${DAYS_BACK}d +%Y-%m-%dT00:00:00Z)
+
+          echo "Fetching meetings since: $SINCE"
+          mkdir -p vault/meetings/transcripts
+
+          # Fetch meetings list
+          RESPONSE=$(curl -s -f \
+            "https://api.fathom.ai/external/v1/meetings?since=$SINCE" \
+            -H "X-Api-Key: $FATHOM_API_TOKEN" \
+            -H "Accept: application/json")
+
+          if [ -z "$RESPONSE" ]; then
+            echo "No response from Fathom API"
+            exit 1
+          fi
+
+          MEETING_COUNT=$(echo "$RESPONSE" | python3 -c "import sys,json; data=json.load(sys.stdin); print(len(data) if isinstance(data, list) else len(data.get('meetings', data.get('data', []))))")
+          echo "Meetings found: $MEETING_COUNT"
+
+          # Process each meeting
+          python3 << 'PYEOF'
+          import json, os, re, sys
+
+          response = json.loads('''$RESPONSE'''.replace("'", "\\'"))
+          meetings = response if isinstance(response, list) else response.get('meetings', response.get('data', []))
+
+          synced = 0
+          for meeting in meetings:
+              mid = meeting.get('id', meeting.get('meeting_id', ''))
+              title = meeting.get('title', meeting.get('name', 'untitled'))
+              date = meeting.get('date', meeting.get('created_at', ''))[:10]
+
+              # Clean title for filename
+              safe_title = re.sub(r'[^\w\s-]', '', title)[:80].strip().replace(' ', '_')
+              basename = f"{date}_{safe_title}"
+
+              # Save full meeting JSON
+              json_path = f"vault/meetings/transcripts/{basename}.json"
+              if not os.path.exists(json_path):
+                  with open(json_path, 'w') as f:
+                      json.dump(meeting, f, indent=2)
+
+                  # Extract verbatim transcript
+                  transcript = meeting.get('transcript', [])
+                  if transcript:
+                      txt_path = f"vault/meetings/transcripts/{basename}_verbatim.txt"
+                      with open(txt_path, 'w') as f:
+                          for entry in transcript:
+                              speaker = entry.get('speaker', entry.get('speaker_name', 'Unknown'))
+                              text = entry.get('text', entry.get('content', ''))
+                              ts = entry.get('timestamp', entry.get('start_time', ''))
+                              f.write(f"[{ts}] {speaker}: {text}\n")
+
+                  synced += 1
+                  print(f"  Synced: {basename}")
+              else:
+                  print(f"  Skip (exists): {basename}")
+
+          print(f"\nTotal synced: {synced} new, {len(meetings) - synced} existing")
+
+          # Write sync manifest
+          manifest = {
+              'synced_at': __import__('datetime').datetime.utcnow().isoformat() + 'Z',
+              'meetings_checked': len(meetings),
+              'meetings_synced': synced,
+              'source': 'Fathom API (api.fathom.ai/external/v1/meetings)'
+          }
+          with open('vault/meetings/transcripts/.last_sync.json', 'w') as f:
+              json.dump(manifest, f, indent=2)
+          PYEOF
+
+      - name: Segment by client
+        run: |
+          python3 << 'PYEOF'
+          import os, json, glob, re
+
+          CLIENT_TAGS = {
+              'modern_office': ['Modern Office', 'Modern_Office'],
+              'discount_equipment': ['Discount Equipment', 'Discount_Equipment'],
+              'triage_partners': ['Triage Partners', 'Triage_Partners'],
+              'wilson_case': ['Wilson Case', 'Wilson_Case'],
+              'hansen_pole': ['Hansen Pole', 'Hansen_Pole'],
+              'br_real_estate': ['BR Real Estate', 'BR_Real_Estate'],
+              'keene_systems': ['Keene Systems', 'Keene_Systems'],
+              'michael_management': ['Michael Management', 'Michael_Management'],
+              'shirlington_shell': ['Shirlington Shell', 'Shirlington_Shell'],
+              'supreme_outdoor': ['Supreme Outdoor', 'Supreme_Outdoor'],
+              'tidewater': ['Tidewater', 'TideWater', 'Tidewater_Stalls'],
+          }
+
+          base = 'vault/meetings/transcripts'
+          for f in glob.glob(os.path.join(base, '*.json')):
+              if f.endswith('.last_sync.json'):
+                  continue
+              name = os.path.basename(f)
+              matched = False
+              for tag, patterns in CLIENT_TAGS.items():
+                  if any(p.lower() in name.lower() for p in patterns):
+                      client_dir = os.path.join('vault/meetings/by_client', tag)
+                      os.makedirs(client_dir, exist_ok=True)
+                      dest = os.path.join(client_dir, name)
+                      if not os.path.exists(dest):
+                          os.symlink(os.path.relpath(f, client_dir), dest)
+                      # Also link verbatim
+                      txt = f.replace('.json', '_verbatim.txt')
+                      if os.path.exists(txt):
+                          txt_dest = os.path.join(client_dir, os.path.basename(txt))
+                          if not os.path.exists(txt_dest):
+                              os.symlink(os.path.relpath(txt, client_dir), txt_dest)
+                      matched = True
+                      break
+              if not matched:
+                  uncategorized = 'vault/meetings/by_client/uncategorized'
+                  os.makedirs(uncategorized, exist_ok=True)
+                  dest = os.path.join(uncategorized, name)
+                  if not os.path.exists(dest):
+                      os.symlink(os.path.relpath(f, uncategorized), dest)
+
+          print("Client segmentation complete")
+          PYEOF
+
+      - name: Commit transcripts
+        run: |
+          git config user.name "lmaos-pipeline[bot]"
+          git config user.email "lmaai@theleverageway.com"
+          git add vault/meetings/
+          git diff --cached --quiet && echo "No new transcripts" || \
+            git commit -m "Fathom sync: $(date -u +%Y-%m-%d) transcript pull"
+          git push

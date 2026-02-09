@@ -55,7 +55,10 @@ Phase 4: Deliver     → Finalized reports pushed to portals + Teamwork
 ### 3.1 Trigger
 
 - Manual: `scripts/reports/run_monthly_reports.sh`
-- Scheduled: GitHub Actions cron (1st and 15th of month)
+- GitHub Actions: `.github/workflows/reporting-pipeline.yml`
+  - Scheduled: 1st of month 6 AM UTC (full prior month), 15th (MTD)
+  - On-demand: `workflow_dispatch` with month, phase, dry_run inputs
+- Fathom sync: `.github/workflows/fathom-sync.yml` (daily 6 AM UTC)
 
 ### 3.2 Inputs
 
@@ -250,10 +253,53 @@ reports/monthly/{client}/{period}/enrichment/
 | `scripts/reports/run_enrichment.sh` | Phase 3 orchestrator | v1 |
 | `scripts/reports/enrichment/ga4_pull.sh` | GA4 Data API pull | v1 |
 | `scripts/reports/enrichment/ads_pull.sh` | Google Ads + Meta Ads pull | v1 |
+| `.github/workflows/reporting-pipeline.yml` | CI/CD: Phase 1+2+3 automation | v1 |
+| `.github/workflows/fathom-sync.yml` | CI/CD: Daily Fathom transcript sync | v1 |
 
 ---
 
-## 8. Integration Points
+## 8. GitHub Actions & CI/CD
+
+### 8.1 Workflows
+
+| Workflow | Schedule | Trigger |
+|----------|----------|---------|
+| `reporting-pipeline.yml` | 1st + 15th of month, 6 AM UTC | schedule + workflow_dispatch |
+| `fathom-sync.yml` | Daily 6 AM UTC | schedule + workflow_dispatch |
+
+### 8.2 Required Repository Secrets
+
+Set via GitHub Settings → Secrets and variables → Actions:
+
+| Secret | Source | Used By |
+|--------|--------|---------|
+| `GA4_OAUTH_CLIENT_ID` | Google Cloud Console → OAuth 2.0 Client | ga4_pull.sh |
+| `GA4_OAUTH_CLIENT_SECRET` | Google Cloud Console → OAuth 2.0 Client | ga4_pull.sh |
+| `GA4_REFRESH_TOKEN` | OAuth2 flow for access@theleverageway.com | ga4_pull.sh |
+| `GOOGLE_ADS_DEVELOPER_TOKEN` | Google Ads MCC → API Center | ads_pull.sh |
+| `GOOGLE_ADS_CLIENT_ID` | Google Cloud Console (same as GA4 or separate) | ads_pull.sh |
+| `GOOGLE_ADS_CLIENT_SECRET` | Google Cloud Console | ads_pull.sh |
+| `GOOGLE_ADS_REFRESH_TOKEN` | OAuth2 flow for access@theleverageway.com | ads_pull.sh |
+| `GOOGLE_ADS_LOGIN_CUSTOMER_ID` | MCC customer ID (no dashes) | ads_pull.sh |
+| `META_ACCESS_TOKEN` | Meta Business → System User token | ads_pull.sh |
+| `FATHOM_API_TOKEN` | Fathom → Settings → API | fathom-sync.yml |
+
+All secrets sourced from Notion Secrets Registry (90f3336e8fda4a8f8517ffd9559eae36) or directly from platform dashboards.
+
+### 8.3 Reporting Pipeline Jobs
+
+```
+reporting-pipeline.yml
+├── generate     → Phase 1: Draft reports (commits to repo)
+├── dispatch     → Phase 2: Enrichment job dispatch (depends on generate)
+└── enrich       → Phase 3: GA4 + Ads + Fathom pulls (depends on dispatch)
+```
+
+Bot identity: `lmaos-pipeline[bot]` / `lmaai@theleverageway.com`
+
+---
+
+## 9. Integration Points
 
 ```yaml
 integrations:
@@ -287,7 +333,7 @@ integrations:
 
 ---
 
-## 9. Governance & Safety
+## 10. Governance & Safety
 
 - **STOP**: Halt report generation if client config is invalid
 - **REALIGN**: Re-check against Canon if report schema changes
@@ -297,14 +343,19 @@ integrations:
 
 ---
 
-## 10. Versioning
+## 11. Versioning
 
-### 10.1 Current Version
+### 11.1 Current Version
 
-1.1 — Phase 3 enrichment implementation (GA4, Ads, Fathom, Claude)
+1.2 — GitHub Actions CI/CD wiring
 
-### 10.2 Change Log
+### 11.2 Change Log
 
+- **v1.2** (20260209)
+  - Added GitHub Actions workflows (reporting-pipeline.yml, fathom-sync.yml)
+  - Documented required repository secrets for GA4, Ads, Meta, Fathom
+  - Bot identity: lmaos-pipeline[bot] / lmaai@theleverageway.com
+  - Scheduled runs: 1st/15th monthly (reports), daily (Fathom sync)
 - **v1.1** (20260205)
   - Implemented Phase 3 enrichment scripts (ga4_pull.sh, ads_pull.sh, run_enrichment.sh)
   - Added identity config (config/identity.v1.json) for access@theleverageway.com

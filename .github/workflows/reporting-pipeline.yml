@@ -1,0 +1,193 @@
+name: Reporting Pipeline — Generate + Dispatch + Enrich
+
+on:
+  schedule:
+    # 1st of month at 6 AM UTC — full prior month
+    - cron: '0 6 1 * *'
+    # 15th of month at 6 AM UTC — MTD check
+    - cron: '0 6 15 * *'
+  workflow_dispatch:
+    inputs:
+      month:
+        description: 'Report month (YYYY-MM). Leave blank for auto-detect.'
+        required: false
+        type: string
+      phase:
+        description: 'Phase to run (all, generate, dispatch, enrich)'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - generate
+          - dispatch
+          - enrich
+      dry_run:
+        description: 'Dry run (no live API calls)'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+env:
+  # Google Analytics
+  GA4_OAUTH_CLIENT_ID: ${{ secrets.GA4_OAUTH_CLIENT_ID }}
+  GA4_OAUTH_CLIENT_SECRET: ${{ secrets.GA4_OAUTH_CLIENT_SECRET }}
+  GA4_REFRESH_TOKEN: ${{ secrets.GA4_REFRESH_TOKEN }}
+  # Google Ads
+  GOOGLE_ADS_DEVELOPER_TOKEN: ${{ secrets.GOOGLE_ADS_DEVELOPER_TOKEN }}
+  GOOGLE_ADS_CLIENT_ID: ${{ secrets.GOOGLE_ADS_CLIENT_ID }}
+  GOOGLE_ADS_CLIENT_SECRET: ${{ secrets.GOOGLE_ADS_CLIENT_SECRET }}
+  GOOGLE_ADS_REFRESH_TOKEN: ${{ secrets.GOOGLE_ADS_REFRESH_TOKEN }}
+  GOOGLE_ADS_LOGIN_CUSTOMER_ID: ${{ secrets.GOOGLE_ADS_LOGIN_CUSTOMER_ID }}
+  # Meta Ads
+  META_ACCESS_TOKEN: ${{ secrets.META_ACCESS_TOKEN }}
+  # Fathom
+  FATHOM_API_TOKEN: ${{ secrets.FATHOM_API_TOKEN }}
+
+jobs:
+  generate:
+    name: "Phase 1 — Generate Draft Reports"
+    runs-on: ubuntu-latest
+    if: >-
+      github.event.inputs.phase == 'all' ||
+      github.event.inputs.phase == 'generate' ||
+      github.event_name == 'schedule'
+    outputs:
+      manifest: ${{ steps.gen.outputs.manifest }}
+      month: ${{ steps.params.outputs.month }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine report month
+        id: params
+        run: |
+          if [ -n "${{ github.event.inputs.month }}" ]; then
+            echo "month=${{ github.event.inputs.month }}" >> "$GITHUB_OUTPUT"
+          else
+            # 1st of month → report on prior month; 15th → current month MTD
+            DAY=$(date -u +%d)
+            if [ "$DAY" -le 5 ]; then
+              echo "month=$(date -u -d 'last month' +%Y-%m)" >> "$GITHUB_OUTPUT"
+            else
+              echo "month=$(date -u +%Y-%m)" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+      - name: Run Phase 1 — Generate
+        id: gen
+        run: |
+          bash scripts/reports/run_monthly_reports.sh --month "${{ steps.params.outputs.month }}"
+          MANIFEST=$(ls -t reports/monthly/manifest_*.json | head -1)
+          echo "manifest=$MANIFEST" >> "$GITHUB_OUTPUT"
+
+      - name: Upload reports artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: draft-reports
+          path: reports/monthly/
+          retention-days: 30
+
+      - name: Commit draft reports
+        run: |
+          git config user.name "lmaos-pipeline[bot]"
+          git config user.email "lmaai@theleverageway.com"
+          git add reports/monthly/ vault/ledger/
+          git diff --cached --quiet && echo "No changes" || \
+            git commit -m "Pipeline: Phase 1 draft reports for ${{ steps.params.outputs.month }}"
+          git push
+
+  dispatch:
+    name: "Phase 2 — Dispatch Enrichment Jobs"
+    runs-on: ubuntu-latest
+    needs: generate
+    if: >-
+      github.event.inputs.phase == 'all' ||
+      github.event.inputs.phase == 'dispatch' ||
+      github.event_name == 'schedule'
+    outputs:
+      dispatch_file: ${{ steps.dispatch.outputs.dispatch_file }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Pull latest
+        run: git pull origin ${{ github.ref_name }}
+
+      - name: Download reports artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: draft-reports
+          path: reports/monthly/
+
+      - name: Run Phase 2 — Dispatch
+        id: dispatch
+        run: |
+          DRY_FLAG=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            DRY_FLAG="--dry-run"
+          fi
+          bash scripts/reports/dispatch_monthly_jobs.sh $DRY_FLAG
+          DISPATCH=$(ls -t vault/ledger/report_jobs/dispatch_*.json | head -1)
+          echo "dispatch_file=$DISPATCH" >> "$GITHUB_OUTPUT"
+
+      - name: Commit dispatch ledger
+        run: |
+          git config user.name "lmaos-pipeline[bot]"
+          git config user.email "lmaai@theleverageway.com"
+          git add vault/ledger/
+          git diff --cached --quiet && echo "No changes" || \
+            git commit -m "Pipeline: Phase 2 dispatch for ${{ needs.generate.outputs.month }}"
+          git push
+
+  enrich:
+    name: "Phase 3 — Enrich (GA4 + Ads + Fathom)"
+    runs-on: ubuntu-latest
+    needs: [generate, dispatch]
+    if: >-
+      github.event.inputs.phase == 'all' ||
+      github.event.inputs.phase == 'enrich' ||
+      github.event_name == 'schedule'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Pull latest
+        run: git pull origin ${{ github.ref_name }}
+
+      - name: Download reports artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: draft-reports
+          path: reports/monthly/
+
+      - name: Install dependencies
+        run: pip3 install google-auth google-auth-oauthlib
+
+      - name: Run Phase 3 — Enrichment
+        run: |
+          DRY_FLAG=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            DRY_FLAG="--dry-run"
+          fi
+          bash scripts/reports/run_enrichment.sh $DRY_FLAG
+
+      - name: Upload enrichment artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: enrichment-data
+          path: reports/monthly/*/enrichment/
+          retention-days: 30
+
+      - name: Commit enrichment data
+        run: |
+          git config user.name "lmaos-pipeline[bot]"
+          git config user.email "lmaai@theleverageway.com"
+          git add reports/monthly/ vault/ledger/
+          git diff --cached --quiet && echo "No changes" || \
+            git commit -m "Pipeline: Phase 3 enrichment for ${{ needs.generate.outputs.month }}"
+          git push
